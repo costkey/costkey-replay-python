@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "costkey-replay"
+version = "0.1.0"
+description = "Session replay for Python browser agents. Records the pages your Playwright agent drives and lines them up with its LLM calls in CostKey."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "CostKey", email = "hello@costkey.dev" }]
+keywords = ["costkey", "session-replay", "rrweb", "browser-agent", "playwright", "cdp", "agents", "observability"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Monitoring",
+]
+# No runtime dependencies: it patches the Playwright your app already has.
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8", "playwright>=1.40"]
+
+[project.urls]
+Homepage = "https://costkey.dev"
+Documentation = "https://costkey.dev/docs/"
+Source = "https://github.com/costkey/costkey-replay-python"
+
+[tool.hatch.build.targets.wheel]
+packages = ["costkey_replay"]
+
+[tool.hatch.build.targets.sdist]
+include = ["costkey_replay", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}, Playwright ${{ matrix.playwright }}
+    # ubuntu-latest (26.04) has no Python 3.9 build; 24.04 still does.
+    runs-on: ${{ matrix.python-version == '3.9' && 'ubuntu-24.04' || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The 1.4x client layout (playwright._impl._connection)
+          - python-version: "3.9"
+            playwright: "1.48.0"
+          - python-version: "3.11"
+            playwright: "1.48.0"
+          # The newer client layout (playwright._impl.connection)
+          - python-version: "3.12"
+            playwright: "latest"
+          - python-version: "3.13"
+            playwright: "latest"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install -e . pytest build twine
+          if [ "${{ matrix.playwright }}" = "latest" ]; then python -m pip install playwright; else python -m pip install "playwright==${{ matrix.playwright }}"; fi
+      - name: Test (Chrome from the runner image)
+        run: python -m pytest
+        env:
+          BROWSER_CHANNEL: chrome
+      - name: Build
+        run: python -m build
+      - name: Check package
+        run: |
+          python -m twine check dist/*
+          python -c "import zipfile, glob; names = zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist(); assert 'costkey_replay/vendor/rrweb-record.min.js' in names, names"
